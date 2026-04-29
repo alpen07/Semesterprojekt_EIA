@@ -5,6 +5,7 @@ class Store {
 		this.prestige = Number(localStorage.getItem('prestige')) || 0;
 		this.clickPower = Number(localStorage.getItem('clickPower')) || (1 + this.prestige);
 		this.autoKrystallsPerSecond = Number(localStorage.getItem('autoKrystallsPerSecond')) || 0;
+		this.upgradeCounts = JSON.parse(localStorage.getItem('upgradeCounts')) || {};
 		this.startAutoIncome();
 	}
 
@@ -14,6 +15,7 @@ class Store {
 		localStorage.setItem('prestige', this.prestige);
 		localStorage.setItem('clickPower', this.clickPower);
 		localStorage.setItem('autoKrystallsPerSecond', this.autoKrystallsPerSecond);
+		localStorage.setItem('upgradeCounts', JSON.stringify(this.upgradeCounts));
 	}
 
 	// Adds krystalls and persists the updated state.
@@ -24,7 +26,12 @@ class Store {
 
 	// Checks whether an upgrade costs less than or equal to the current krystalls.
 	canBuyUpgrade(upgrade) {
-		return this.krystalls >= upgrade.cost;
+		return this.krystalls >= upgrade.cost && this.getUpgradeCount(upgrade.id) < (upgrade.maxQuantity || 100);
+	}
+
+	// Returns how often an upgrade was already bought.
+	getUpgradeCount(upgradeId) {
+		return this.upgradeCounts[upgradeId] || 0;
 	}
 
 	// Buys an upgrade if it is affordable and updates click power.
@@ -36,6 +43,7 @@ class Store {
 		this.krystalls -= upgrade.cost;
 		this.clickPower += upgrade.power || 0;
 		this.autoKrystallsPerSecond += upgrade.autoKrystallsPerSecond || 0;
+		this.upgradeCounts[upgrade.id] = this.getUpgradeCount(upgrade.id) + 1;
 		this.save();
 		return true;
 	}
@@ -98,9 +106,9 @@ class Upgrades {
 	// Creates the fixed list of available shop upgrades.
 	constructor() {
 		this.items = [
-			{ id: 'drill', name: 'Moon Drill', cost: 25, power: 1 },
-			{ id: 'charger', name: 'Crystal Charger', cost: 120, power: 5 },
-			{ id: 'autoMiner', name: 'Auto Miner', cost: 250, autoKrystallsPerSecond: 1 }
+			{ id: 'drill', name: 'Moon Drill', cost: 25, power: 1, maxQuantity: 100 },
+			{ id: 'charger', name: 'Crystal Charger', cost: 120, power: 5, maxQuantity: 100 },
+			{ id: 'autoMiner', name: 'Auto Miner', cost: 250, autoKrystallsPerSecond: 1, maxQuantity: 100 }
 		];
 	}
 

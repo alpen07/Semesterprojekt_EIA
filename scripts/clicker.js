@@ -51,6 +51,7 @@ class ClickCounter {
 
         this.upgrades.getAll().forEach((item) => {
             const affordable = this.store.canBuyUpgrade(item);
+            const boughtCount = this.store.getUpgradeCount(item.id);
             const itemMeta = item.autoKrystallsPerSecond
                 ? `+${item.autoKrystallsPerSecond} Krystall pro Sekunde`
                 : `+${item.power} power per click`;
@@ -58,7 +59,7 @@ class ClickCounter {
             itemElement.className = 'shop-item';
             itemElement.innerHTML = `
                 <div class="shop-item-title">${item.name}</div>
-                <div class="shop-item-meta">${itemMeta}</div>
+                <div class="shop-item-meta">${itemMeta} | ${boughtCount}/${item.maxQuantity} gekauft</div>
                 <button class="shop-buy-button" type="button" data-upgrade-id="${item.id}" ${affordable ? '' : 'disabled'}>
                     Buy for ${item.cost} Krystalls
                 </button>
