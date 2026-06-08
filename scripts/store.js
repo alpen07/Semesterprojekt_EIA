@@ -22,11 +22,15 @@ class Store {
 	addKrystalls(amount) {
 		this.krystalls += amount;
 		this.save();
+		window.dispatchEvent(new CustomEvent('krystalls-changed'));
 	}
+
 
 	// Checks whether an upgrade costs less than or equal to the current krystalls.
 	canBuyUpgrade(upgrade) {
-		return this.krystalls >= upgrade.cost && this.getUpgradeCount(upgrade.id) < (upgrade.maxQuantity || 100);
+		const count = this.getUpgradeCount(upgrade.id);
+		const cost = window.gameUpgrades.getCost(upgrade.id, count);
+		return this.krystalls >= cost && count < (upgrade.maxQuantity || 100);
 	}
 
 	// Returns how often an upgrade was already bought.
@@ -36,14 +40,14 @@ class Store {
 
 	// Buys an upgrade if it is affordable and updates click power.
 	buyUpgrade(upgrade) {
-		if (!this.canBuyUpgrade(upgrade)) {
-			return false;
-		}
+		const count = this.getUpgradeCount(upgrade.id);
+		const cost = window.gameUpgrades.getCost(upgrade.id, count);
+		if (this.krystalls < cost) return false;
 
-		this.krystalls -= upgrade.cost;
+		this.krystalls -= cost;
 		this.clickPower += upgrade.power || 0;
 		this.autoKrystallsPerSecond += upgrade.autoKrystallsPerSecond || 0;
-		this.upgradeCounts[upgrade.id] = this.getUpgradeCount(upgrade.id) + 1;
+		this.upgradeCounts[upgrade.id] = count + 1;
 		this.save();
 		return true;
 	}
@@ -64,7 +68,6 @@ class Store {
 		}
 
 		this.addKrystalls(this.autoKrystallsPerSecond);
-		window.dispatchEvent(new CustomEvent('krystalls-changed'));
 	}
 
 	// Checks whether the player has enough krystalls to prestige.
@@ -105,10 +108,11 @@ class Store {
 class Upgrades {
 	// Creates the fixed list of available shop upgrades.
 	constructor() {
+		this.scale = 1.15; // cost multiplier per purchase
 		this.items = [
-			{ id: 'drill', name: 'Moon Drill', cost: 25, power: 1, maxQuantity: 100 },
-			{ id: 'charger', name: 'Crystal Charger', cost: 120, power: 5, maxQuantity: 100 },
-			{ id: 'autoMiner', name: 'Auto Miner', cost: 250, autoKrystallsPerSecond: 1, maxQuantity: 100 }
+			{ id: 'drill', name: 'Moon Drill', baseCost: 25, power: 1, maxQuantity: 100 },
+			{ id: 'charger', name: 'Crystal Charger', baseCost: 120, power: 5, maxQuantity: 100 },
+			{ id: 'autoMiner', name: 'Auto Miner', baseCost: 250, autoKrystallsPerSecond: 1, maxQuantity: 100 }
 		];
 	}
 
@@ -120,6 +124,14 @@ class Upgrades {
 	// Finds one upgrade by its id.
 	getById(upgradeId) {
 		return this.items.find((upgrade) => upgrade.id === upgradeId);
+	}
+
+	// Returns cost for given upgrade id at a specific purchase count
+	getCost(upgradeId, count = 0) {
+		const item = this.getById(upgradeId);
+		if (!item) return Infinity;
+		const base = item.baseCost || item.cost || 0;
+		return Math.floor(base * Math.pow(this.scale, count));
 	}
 
 }

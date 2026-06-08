@@ -13,8 +13,10 @@ class ClickCounter {
         this.shopList = document.getElementById('shopList');
         this.prestigeText = document.getElementById('prestigeText');
         this.prestigeActionBtn = document.getElementById('prestigeActionBtn');
+        this.resetBtn = document.getElementById('resetBtn');
 
         this.asteroid.addEventListener('click', () => this.incrementScore());
+        if (this.resetBtn) this.resetBtn.addEventListener('click', () => this.resetGame());
         this.openShopBtn.addEventListener('click', () => this.openModal(this.shopModal));
         this.openPrestigeBtn.addEventListener('click', () => this.openModal(this.prestigeModal));
         this.prestigeActionBtn.addEventListener('click', () => this.doPrestige());
@@ -26,6 +28,14 @@ class ClickCounter {
         this.renderShop();
         this.renderPrestige();
         this.renderScore();
+    }
+
+    // Löscht gespeicherte Spielstände und lädt neu.
+    resetGame() {
+        const keys = ['krystalls','prestige','clickPower','autoKrystallsPerSecond','upgradeCounts','totalEarnedSinceReset'];
+        keys.forEach(k => localStorage.removeItem(k));
+        // reload to reinitialize state
+        location.reload();
     }
 
     // Rendert Spielstand und Shop neu.
@@ -54,14 +64,15 @@ class ClickCounter {
             const boughtCount = this.store.getUpgradeCount(item.id);
             const itemMeta = item.autoKrystallsPerSecond
                 ? `+${item.autoKrystallsPerSecond} Krystall pro Sekunde`
-                : `+${item.power} power per click`;
+                : `+${item.power} Power pro Klick`;
             const itemElement = document.createElement('div');
             itemElement.className = 'shop-item';
+            const currentCost = window.gameUpgrades.getCost(item.id, boughtCount);
             itemElement.innerHTML = `
                 <div class="shop-item-title">${item.name}</div>
                 <div class="shop-item-meta">${itemMeta} | ${boughtCount}/${item.maxQuantity} gekauft</div>
                 <button class="shop-buy-button" type="button" data-upgrade-id="${item.id}" ${affordable ? '' : 'disabled'}>
-                    Buy for ${item.cost} Krystalls
+                    Kaufen für ${currentCost} Krystalls
                 </button>
             `;
 
@@ -86,7 +97,7 @@ class ClickCounter {
     // Aktualisiert den Prestige-Text mit der aktuellen Stufe.
     renderPrestige() {
         const prestigeBonus = this.store.prestige + 1;
-        this.prestigeText.textContent = `Prestige level ${this.store.prestige}. Reset at ${Prestige.threshold} Krystalls to gain a permanent x${prestigeBonus} bonus to click power.`;
+        this.prestigeText.textContent = `Prestige Stufe ${this.store.prestige}. Setze bei ${Prestige.threshold} Krystalls zurück, um dauerhaft x${prestigeBonus} Bonus auf Klick-Power zu erhalten.`;
     }
 
     // Führt Prestige aus, wenn das Ziel erreicht ist.
@@ -100,6 +111,8 @@ class ClickCounter {
         this.renderPrestige();
         this.closeModal(this.prestigeModal);
     }
+
+    
 
     // Öffnet ein Popup-Fenster.
     openModal(modal) {

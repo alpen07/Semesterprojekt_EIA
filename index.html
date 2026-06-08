@@ -1,0 +1,74 @@
+<!DOCTYPE html>
+<html lang="de">
+<head>
+    <meta charset="utf-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1">
+    <title>Krystall Clicker</title>
+    <link href="https://fonts.googleapis.com/css2?family=Inter:wght@300;400;600;700;800&display=swap" rel="stylesheet">
+    <link rel="stylesheet" href="./styles/styles.css">
+    <script src="./scripts/store.js" defer></script>
+    <script src="./scripts/clicker.js" defer></script>
+</head>
+<body>
+    <header class="site-header">
+        <div class="container header-inner">
+            <div class="brand">
+                <img src="./assets/pictures/asteroid.png" alt="" class="logo" aria-hidden="true">
+                <div class="brand-text">
+                    <h1>Planet Clicker</h1>
+                    <p class="tagline">Sammle Krystalle • Verbessere deine Werkzeuge • Steige auf</p>
+                </div>
+            </div>
+            <div class="score-wrapper">
+                <div class="score-display" id="scoreDisplay">Krystalls: 0</div>
+            </div>
+            <div class="header-actions">
+                <button class="reset-button" id="resetBtn" type="button" title="Spiel zurücksetzen">Reset</button>
+            </div>
+        </div>
+    </header>
+
+    <main class="container main-content">
+        <section class="game-shell">
+            <button class="asteroid-btn" aria-label="Klicke um Krystalle zu sammeln">
+                <img class="asteroid" id="asteroid" src="./assets/pictures/asteroid.png" alt="Asteroid">
+            </button>
+        </section>
+    </main>
+
+    <nav class="bottom-nav" aria-label="Spielnavigation">
+        <button class="nav-button" id="openShopBtn" type="button" aria-label="Öffne Shop">
+            <svg width="20" height="20" viewBox="0 0 24 24" fill="none" aria-hidden="true"><path d="M6 7h12l-1.2 9.6A2 2 0 0 1 14.8 19H9.2a2 2 0 0 1-1.98-2.4L6 7z" stroke="currentColor" stroke-width="1.2" stroke-linecap="round" stroke-linejoin="round"/></svg>
+            <span>Shop</span>
+        </button>
+        <button class="nav-button" id="openPrestigeBtn" type="button" aria-label="Prestige">
+            <svg width="20" height="20" viewBox="0 0 24 24" fill="none" aria-hidden="true"><path d="M12 2l2.1 4.3L19 7l-3.5 3.3L16.2 15 12 12.9 7.8 15l1.7-4.7L6 7l4.9-.7L12 2z" stroke="currentColor" stroke-width="1.2" stroke-linecap="round" stroke-linejoin="round"/></svg>
+            <span>Prestige</span>
+        </button>
+    </nav>
+
+    <section class="modal" id="shopModal" aria-hidden="true">
+        <div class="modal-backdrop" data-close-modal="shopModal"></div>
+        <article class="modal-panel" role="dialog" aria-modal="true" aria-labelledby="shopTitle">
+            <header class="modal-header">
+                <h2 id="shopTitle">Shop</h2>
+                <button class="modal-close" type="button" data-close-modal="shopModal" aria-label="Schließen">×</button>
+            </header>
+            <p class="modal-text">Kaufe Upgrades, um mehr Krystalls zu erhalten.</p>
+            <div class="shop-list" id="shopList"></div>
+        </article>
+    </section>
+
+    <section class="modal" id="prestigeModal" aria-hidden="true">
+        <div class="modal-backdrop" data-close-modal="prestigeModal"></div>
+        <article class="modal-panel" role="dialog" aria-modal="true" aria-labelledby="prestigeTitle">
+            <header class="modal-header">
+                <h2 id="prestigeTitle">Prestige</h2>
+                <button class="modal-close" type="button" data-close-modal="prestigeModal" aria-label="Schließen">×</button>
+            </header>
+            <p class="modal-text" id="prestigeText">Setze deinen Fortschritt zurück, um dauerhafte Boni zu erhalten.</p>
+            <button class="prestige-action" id="prestigeActionBtn" type="button">Jetzt Prestige</button>
+        </article>
+    </section>
+</body>
+</html>
