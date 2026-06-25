@@ -1,9 +1,12 @@
 class ClickCounter {
 
-    // Initialisiert die UI-Elemente und bindet alle Events.
+
     constructor() {
+
         this.store = window.gameStore;
         this.upgrades = window.gameUpgrades;
+
+
         this.asteroid = document.getElementById('asteroid');
         this.scoreDisplay = document.getElementById('scoreDisplay');
         this.openShopBtn = document.getElementById('openShopBtn');
@@ -16,57 +19,67 @@ class ClickCounter {
         this.resetBtn = document.getElementById('resetBtn');
 
         this.asteroid.addEventListener('click', () => this.incrementScore());
+
         if (this.resetBtn) this.resetBtn.addEventListener('click', () => this.resetGame());
+
         this.openShopBtn.addEventListener('click', () => this.openModal(this.shopModal));
         this.openPrestigeBtn.addEventListener('click', () => this.openModal(this.prestigeModal));
+
         this.prestigeActionBtn.addEventListener('click', () => this.doPrestige());
+
         window.addEventListener('krystalls-changed', () => this.renderGameState());
+
         document.querySelectorAll('[data-close-modal]').forEach((element) => {
             element.addEventListener('click', () => this.closeModal(this.getModalById(element.dataset.closeModal)));
         });
 
+        
         this.renderShop();
         this.renderPrestige();
         this.renderScore();
     }
 
-    // Löscht gespeicherte Spielstände und lädt neu.
+
     resetGame() {
         const keys = ['krystalls','prestige','clickPower','autoKrystallsPerSecond','upgradeCounts','totalEarnedSinceReset'];
         keys.forEach(k => localStorage.removeItem(k));
-        // reload to reinitialize state
+        
         location.reload();
     }
 
-    // Rendert Spielstand und Shop neu.
+    
     renderGameState() {
         this.renderScore();
         this.renderShop();
     }
 
-    // Erhöht Krystalls durch den Klick auf den Asteroiden.
+   
     incrementScore() {
         this.store.addKrystalls(this.store.clickPower);
         this.renderGameState();
     }
 
-    // Zeigt die aktuelle Krystall- und Power-Anzeige an.
+    
     renderScore() {
         this.scoreDisplay.textContent = `Krystalls: ${this.store.shortFormKrystalls()} | Power: ${this.store.clickPower} | Auto: ${this.store.autoKrystallsPerSecond}/s`;
     }
 
-    // Baut die Shop-Liste aus allen verfügbaren Upgrades zusammen.
+   
     renderShop() {
         this.shopList.innerHTML = '';
 
         this.upgrades.getAll().forEach((item) => {
+            
             const affordable = this.store.canBuyUpgrade(item);
+            
             const boughtCount = this.store.getUpgradeCount(item.id);
+            
             const itemMeta = item.autoKrystallsPerSecond
                 ? `+${item.autoKrystallsPerSecond} Krystall pro Sekunde`
                 : `+${item.power} Power pro Klick`;
             const itemElement = document.createElement('div');
             itemElement.className = 'shop-item';
+            
             const currentCost = window.gameUpgrades.getCost(item.id, boughtCount);
             itemElement.innerHTML = `
                 <div class="shop-item-title">${item.name}</div>
@@ -81,7 +94,7 @@ class ClickCounter {
         });
     }
 
-    // Kauft ein Upgrade über seine ID.
+   
     buyUpgrade(upgradeId) {
         const upgrade = this.upgrades.getById(upgradeId);
 
@@ -94,13 +107,12 @@ class ClickCounter {
         this.renderShop();
     }
 
-    // Aktualisiert den Prestige-Text mit der aktuellen Stufe.
+    
     renderPrestige() {
         const prestigeBonus = this.store.prestige + 1;
         this.prestigeText.textContent = `Prestige Stufe ${this.store.prestige}. Setze bei ${Prestige.threshold} Krystalls zurück, um dauerhaft x${prestigeBonus} Bonus auf Klick-Power zu erhalten.`;
     }
 
-    // Führt Prestige aus, wenn das Ziel erreicht ist.
     doPrestige() {
         if (!this.store.doPrestige()) {
             return;
@@ -114,19 +126,18 @@ class ClickCounter {
 
     
 
-    // Öffnet ein Popup-Fenster.
     openModal(modal) {
         modal.classList.add('is-open');
         modal.setAttribute('aria-hidden', 'false');
     }
 
-    // Schließt ein Popup-Fenster.
+    
     closeModal(modal) {
         modal.classList.remove('is-open');
         modal.setAttribute('aria-hidden', 'true');
     }
 
-    // Holt ein Modal per ID aus dem DOM.
+    
     getModalById(id) {
         return document.getElementById(id);
     }

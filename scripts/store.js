@@ -1,15 +1,17 @@
 class Store {
-	// Loads saved krystalls, prestige, and click power from local storage.
 	constructor() {
+		
 		this.krystalls = Number(localStorage.getItem('krystalls')) || 0;
 		this.prestige = Number(localStorage.getItem('prestige')) || 0;
 		this.clickPower = Number(localStorage.getItem('clickPower')) || (1 + this.prestige);
 		this.autoKrystallsPerSecond = Number(localStorage.getItem('autoKrystallsPerSecond')) || 0;
+		
 		this.upgradeCounts = JSON.parse(localStorage.getItem('upgradeCounts')) || {};
+		
 		this.startAutoIncome();
 	}
 
-	// Saves the current game state to local storage.
+	
 	save() {
 		localStorage.setItem('krystalls', this.krystalls);
 		localStorage.setItem('prestige', this.prestige);
@@ -18,33 +20,33 @@ class Store {
 		localStorage.setItem('upgradeCounts', JSON.stringify(this.upgradeCounts));
 	}
 
-	// Adds krystalls and persists the updated state.
+	
 	addKrystalls(amount) {
 		this.krystalls += amount;
 		this.save();
+		
 		window.dispatchEvent(new CustomEvent('krystalls-changed'));
 	}
 
 
-	// Checks whether an upgrade costs less than or equal to the current krystalls.
 	canBuyUpgrade(upgrade) {
 		const count = this.getUpgradeCount(upgrade.id);
 		const cost = window.gameUpgrades.getCost(upgrade.id, count);
 		return this.krystalls >= cost && count < (upgrade.maxQuantity || 100);
 	}
 
-	// Returns how often an upgrade was already bought.
 	getUpgradeCount(upgradeId) {
 		return this.upgradeCounts[upgradeId] || 0;
 	}
 
-	// Buys an upgrade if it is affordable and updates click power.
+	
 	buyUpgrade(upgrade) {
 		const count = this.getUpgradeCount(upgrade.id);
 		const cost = window.gameUpgrades.getCost(upgrade.id, count);
 		if (this.krystalls < cost) return false;
 
 		this.krystalls -= cost;
+		
 		this.clickPower += upgrade.power || 0;
 		this.autoKrystallsPerSecond += upgrade.autoKrystallsPerSecond || 0;
 		this.upgradeCounts[upgrade.id] = count + 1;
@@ -52,8 +54,9 @@ class Store {
 		return true;
 	}
 
-	// Starts the automatic krystall income tick.
+	
 	startAutoIncome() {
+		
 		if (this.autoIncomeInterval) {
 			return;
 		}
@@ -61,8 +64,9 @@ class Store {
 		this.autoIncomeInterval = setInterval(() => this.tickAutoIncome(), 1000);
 	}
 
-	// Adds automatic krystalls once per second when auto income is unlocked.
+	
 	tickAutoIncome() {
+		
 		if (this.autoKrystallsPerSecond <= 0) {
 			return;
 		}
@@ -70,12 +74,12 @@ class Store {
 		this.addKrystalls(this.autoKrystallsPerSecond);
 	}
 
-	// Checks whether the player has enough krystalls to prestige.
+	
 	canPrestige() {
 		return this.krystalls >= Prestige.threshold;
 	}
 
-	// Resets krystalls and increases prestige if the threshold is reached.
+	
 	doPrestige() {
 		if (!this.canPrestige()) {
 			return false;
@@ -89,7 +93,7 @@ class Store {
 		return true;
 	}
 
-	// Formats krystalls into a short readable number string.
+	
 	shortFormKrystalls() {
 		switch (true) {
 			case this.krystalls >= 1e6: {
@@ -106,9 +110,10 @@ class Store {
 }
 
 class Upgrades {
-	// Creates the fixed list of available shop upgrades.
+	
 	constructor() {
-		this.scale = 1.15; // cost multiplier per purchase
+		
+		this.scale = 1.15;
 		this.items = [
 			{ id: 'drill', name: 'Moon Drill', baseCost: 25, power: 1, maxQuantity: 100 },
 			{ id: 'charger', name: 'Crystal Charger', baseCost: 120, power: 5, maxQuantity: 100 },
@@ -116,17 +121,17 @@ class Upgrades {
 		];
 	}
 
-	// Returns every upgrade in the shop.
+	
 	getAll() {
 		return this.items;
 	}
 
-	// Finds one upgrade by its id.
+	
 	getById(upgradeId) {
 		return this.items.find((upgrade) => upgrade.id === upgradeId);
 	}
 
-	// Returns cost for given upgrade id at a specific purchase count
+	
 	getCost(upgradeId, count = 0) {
 		const item = this.getById(upgradeId);
 		if (!item) return Infinity;
@@ -137,8 +142,10 @@ class Upgrades {
 }
 
 class Prestige {
+	
 	static threshold = 500;
 }
+
 
 window.gameStore = new Store();
 window.gameUpgrades = new Upgrades();
